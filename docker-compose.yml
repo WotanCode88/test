@@ -1,0 +1,43 @@
+services:
+  postgres:
+    image: postgres:15
+    container_name: pg
+    environment:
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: users_db
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+    ports:
+      - "5432:5432"
+
+  grpc_server:
+    build:
+      context: .
+      dockerfile: grpc_server/Dockerfile
+    container_name: grpc_server
+    depends_on:
+      - postgres
+    environment:
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_USER: user
+      DB_PASSWORD: password
+      DB_NAME: users_db
+    ports:
+      - "50051:50051"
+
+  http_server:
+    build:
+      context: .
+      dockerfile: http_server/Dockerfile
+    container_name: http_server
+    depends_on:
+      - grpc_server
+    ports:
+      - "8080:8080"
+
+volumes:
+  postgres_data:
+    driver: local

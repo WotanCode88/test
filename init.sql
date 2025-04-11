@@ -1,0 +1,6 @@
+CREATE TABLE IF NOT EXISTS users (
+    id SERIAL PRIMARY KEY,
+    telegram_id BIGINT NOT NULL UNIQUE,
+    channel_id BIGINT NOT NULL,
+    created_at TIMESTAMP DEFAULT NOW()
+);

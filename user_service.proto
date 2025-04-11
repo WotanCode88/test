@@ -1,0 +1,19 @@
+syntax = "proto3";
+
+package user_service;
+
+option go_package = "./pkg/proto;proto"; 
+
+message CheckUserInGroupRequest {
+    string token = 1;
+    int64 channel_id = 2;
+    int64 user_id = 3;
+}
+
+message CheckUserInGroupResponse {
+    bool is_user_in_group = 1;
+}
+
+service UserService {
+    rpc CheckUserInGroup(CheckUserInGroupRequest) returns (CheckUserInGroupResponse);
+}
