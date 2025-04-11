@@ -13,16 +13,16 @@ var bot *tgbotapi.BotAPI
 func InitTelegram() error {
 	token := os.Getenv("TG_BOT_TOKEN")
 	if token == "" {
-		return fmt.Errorf("такого бота не существует")
+		return fmt.Errorf("TG_BOT_TOKEN не задан")
 	}
 
 	var err error
 	bot, err = tgbotapi.NewBotAPI(token)
 	if err != nil {
-		return fmt.Errorf("не удалось создать: %v", err)
+		return fmt.Errorf("ошибка авторизации бота: %v", err)
 	}
 
-	log.Printf("авторизация в %s", bot.Self.UserName)
+	log.Printf("бот авторизован как: %s", bot.Self.UserName)
 	return nil
 }
 
@@ -34,12 +34,13 @@ func IsUserInGroup(chatID int64, userID int64) (bool, error) {
 
 	member, err := bot.GetChatMember(config)
 	if err != nil {
-		return false, fmt.Errorf("ошибка с chatID: %v", err)
+		return false, fmt.Errorf("ошибка получения чата: %v", err)
 	}
 
-	if member.Status == "member" {
-		return true, nil // Пользователь в группе
+	switch member.Status {
+	case "creator", "administrator", "member":
+		return true, nil
+	default:
+		return false, nil
 	}
-
-	return false, nil // Пользователь не в группе
 }

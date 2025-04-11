@@ -1,26 +1,26 @@
 package user_service
 
 import (
-	"fmt"
-	"user_service/internal/db"
+	"context"
 	"user_service/internal/telegram"
+	"user_service/pkg/proto"
 )
 
-func CheckAndAddUserToDB(token string, channelID int64, userID int64) error {
-	isMember, err := telegram.IsUserInGroup(channelID, userID)
+type UserService struct {
+	proto.UnimplementedUserServiceServer
+}
+
+func NewUserService() *UserService {
+	return &UserService{}
+}
+
+func (s *UserService) CheckUserInGroup(ctx context.Context, req *proto.CheckUserInGroupRequest) (*proto.CheckUserInGroupResponse, error) {
+	inGroup, err := telegram.IsUserInGroup(req.ChannelId, req.UserId)
 	if err != nil {
-		return fmt.Errorf("ошибка: %v", err)
+		return nil, err
 	}
 
-	if !isMember {
-		return fmt.Errorf("юзер не в группе")
-	}
-
-	query := `INSERT INTO users (telegram_id, channel_id) VALUES ($1, $2) RETURNING id`
-	_, err = db.DB.Exec(query, userID, channelID)
-	if err != nil {
-		return fmt.Errorf("ошибка бд: %v", err)
-	}
-
-	return nil
+	return &proto.CheckUserInGroupResponse{
+		IsUserInGroup: inGroup,
+	}, nil
 }
