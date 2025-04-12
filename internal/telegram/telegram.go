@@ -3,17 +3,23 @@ package telegram
 import (
 	"fmt"
 	"log"
-	"os"
+	"sync"
 
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api"
 )
 
-var bot *tgbotapi.BotAPI
+var (
+	bot      *tgbotapi.BotAPI
+	initMux  sync.Mutex
+	botToken string
+)
 
-func InitTelegram() error {
-	token := os.Getenv("TG_BOT_TOKEN")
-	if token == "" {
-		return fmt.Errorf("TG_BOT_TOKEN не задан")
+func Init(token string) error {
+	initMux.Lock()
+	defer initMux.Unlock()
+
+	if bot != nil && botToken == token {
+		return nil
 	}
 
 	var err error
@@ -22,11 +28,16 @@ func InitTelegram() error {
 		return fmt.Errorf("ошибка авторизации бота: %v", err)
 	}
 
+	botToken = token
 	log.Printf("бот авторизован как: %s", bot.Self.UserName)
 	return nil
 }
 
 func IsUserInGroup(chatID int64, userID int64) (bool, error) {
+	if bot == nil {
+		return false, fmt.Errorf("бот не инициализирован — вызови Init(token)")
+	}
+
 	config := tgbotapi.ChatConfigWithUser{
 		ChatID: chatID,
 		UserID: int(userID),

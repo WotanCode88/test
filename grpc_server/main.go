@@ -4,7 +4,6 @@ import (
 	"log"
 	"net"
 	"os"
-	"user_service/internal/telegram"
 	"user_service/internal/user_service"
 	"user_service/pkg/proto"
 
@@ -12,12 +11,6 @@ import (
 )
 
 func main() {
-	// Инициализация Telegram
-	err := telegram.InitTelegram()
-	if err != nil {
-		log.Fatalf("Ошибка инициализации Telegram: %v", err)
-	}
-
 	port := os.Getenv("GRPC_PORT")
 	if port == "" {
 		port = "50051"

@@ -10,6 +10,7 @@ import (
 	"user_service/pkg/proto"
 
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials/insecure"
 )
 
 type RequestData struct {
@@ -40,7 +41,7 @@ type GRPCConnection struct {
 }
 
 func NewGRPCConnection(address string) (*GRPCConnection, error) {
-	conn, err := grpc.Dial(address, grpc.WithInsecure(), grpc.WithBlock())
+	conn, err := grpc.Dial(address, grpc.WithTransportCredentials(insecure.NewCredentials()), grpc.WithBlock())
 	if err != nil {
 		return nil, fmt.Errorf("не получилось подключиться к gRPC серверу: %v", err)
 	}
@@ -96,7 +97,7 @@ func checkUserInGroupHandler(w http.ResponseWriter, r *http.Request, grpcClient 
 }
 
 func main() {
-	grpcConnection, err := NewGRPCConnection("localhost:50051")
+	grpcConnection, err := NewGRPCConnection("grpc_server:50051") // <--- ЭТО ГЛАВНОЕ
 	if err != nil {
 		log.Fatalf("не получилось подключиться к gRPC серверу: %v", err)
 	}
